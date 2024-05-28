@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
+	"strings"
 )
 
 const (
@@ -15,9 +17,33 @@ const (
 	api_option = "paste"
 )
 
-func readFile() string {
-	openFile := os.Args[1]
-	file, err := os.Open(openFile)
+
+func inputArgs() (string, string) {
+	fileToOpen := os.Args[1]
+	LinesToSend := os.Args[2]
+	return fileToOpen, LinesToSend
+}
+
+func splitInput(linesToSend string) (int64, int64) {
+	strSlice := strings.Split(linesToSend, "-")
+	number1, err := strconv.ParseInt(strSlice[0], 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	number2, err := strconv.ParseInt(strSlice[1], 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	if (number2 - number1) < 0{
+		panic("second value should be bigger than first")
+	}
+	fmt.Println(number1, number2)
+	return number1, number2
+
+}
+
+func readFile(fileToOpen string, linesToSend lineNumbersToSend) string {
+	file, err := os.Open(fileToOpen)
 	if err != nil {
 		panic(err)
 	}
@@ -29,10 +55,9 @@ func readFile() string {
 		lns = append(lns, scanner.Text())
 	}
 	file.Close()
-	for ok, line := range lns {
-		fmt.Println(ok, line)
+	for position, line := range lns {
+		fmt.Println(position, line)
 	}
-	fmt.Println(lns)
 	return "ok"
 }
 
@@ -47,10 +72,12 @@ func getDevKey() string {
 }
 
 func main() {
+	fileToOpen, linesToSend := inputArgs()
+	number1, number2 := splitInput(linesToSend)
 	v := url.Values{}
 	v.Set("api_dev_key", getDevKey())
 	v.Set("api_option", api_option)
-	v.Set("api_paste_code", readFile())
+	v.Set("api_paste_code", readFile(fileToOpen, number1))
 	//jsonBody := []byte(`{"api_dev_key":"IEOfIviozs3g5uUW5kyhHEQo8Gmfe5p2"}`)
 	request, err := http.NewRequest(http.MethodPost, apiurl, bytes.NewBuffer([]byte(v.Encode())))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
