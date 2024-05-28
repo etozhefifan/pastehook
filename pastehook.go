@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -20,11 +21,19 @@ func readFile() string {
 	if err != nil {
 		panic(err)
 	}
-	byt, err := io.ReadAll(file)
-	if err != nil {
-		panic(err)
+	red := io.Reader(file)
+	scanner := bufio.NewScanner(red)
+	scanner.Split(bufio.ScanLines)
+	var lns []string
+	for scanner.Scan(){
+		lns = append(lns, scanner.Text())
 	}
-	return string(byt)
+	file.Close()
+	for ok, line := range lns {
+		fmt.Println(ok, line)
+	}
+	fmt.Println(lns)
+	return "ok"
 }
 
 func getDevKey() string {
