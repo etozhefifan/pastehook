@@ -21,8 +21,11 @@ const (
 
 func inputArgs() (string, string) {
 	fileToOpen := os.Args[1]
-	LinesToSend := os.Args[2]
-	return fileToOpen, LinesToSend
+	if len(os.Args) <= 2 {
+		return fileToOpen, "nil"
+	}
+	linesToSend := os.Args[2]
+	return fileToOpen, linesToSend
 }
 
 func splitInput(linesToSend string) (int64, int64) {
@@ -43,12 +46,18 @@ func splitInput(linesToSend string) (int64, int64) {
 }
 
 func parseFile(fileToOpen string, linesToSend string) string {
-	lineStart, lineEnd := splitInput(linesToSend)
 	file, err := os.Open(fileToOpen)
+	red := io.Reader(file)
+	var lineStart, lineEnd int64
+	if linesToSend == "nil" {
+		lineStart, lineEnd = 0, countLines(red)
+	} else {	
+		lineStart, lineEnd = splitInput(linesToSend)
+	}
 	if err != nil {
 		panic(err)
 	}
-	red := io.Reader(file)
+	file.Seek(0, io.SeekStart)
 	neccessaryLines := scanLines(red, lineStart, lineEnd)
 	file.Close()
 	return neccessaryLines
@@ -72,6 +81,20 @@ func scanLines(red io.Reader, lineStart int64, lineEnd int64)string{
 	}
 	return buffer.String()
 }
+
+func countLines(red io.Reader) int64 {
+	scanner := bufio.NewScanner(red)
+	var lineCount int64	
+	for scanner.Scan(){
+		lineCount++
+	}
+	if err := scanner.Err(); err != nil{
+		return lineCount
+	}
+	return lineCount 
+}
+
+
 
 
 func getDevKey() string {
@@ -120,6 +143,7 @@ func putLinkToClipboard(link string){
 func main() {
 	fileToOpen, linesToSend := inputArgs()
 	text := parseFile(fileToOpen, linesToSend)
+	fmt.Println(text)
 	data := formData(text)
 	putLinkToClipboard(string(sendTextToPastehook(data)))
 }
