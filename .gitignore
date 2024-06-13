@@ -18,6 +18,7 @@
 # vendor/
 
 # Go workspace file
-go.work
-ipsum.txt
-script.sh
+src/go.work
+src/ipsum.txt
+src/script.sh
+notes.txt

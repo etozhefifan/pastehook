@@ -14,19 +14,19 @@ import (
 )
 
 const (
+	nilInput   = "nil"
 	apiurl     = "https://pastebin.com/api/api_post.php"
 	api_option = "paste"
 )
 
-
-func inputArgs() (string, string) {
-	fileToOpen := os.Args[1]
+func isLinesInInput() bool {
 	if len(os.Args) <= 2 {
-		return fileToOpen, "nil"
+		return false
+	} else {
+		return true
 	}
-	linesToSend := os.Args[2]
-	return fileToOpen, linesToSend
 }
+
 
 func splitInput(linesToSend string) (int64, int64) {
 	strSlice := strings.Split(linesToSend, "-")
@@ -49,7 +49,7 @@ func parseFile(fileToOpen string, linesToSend string) string {
 	file, err := os.Open(fileToOpen)
 	red := io.Reader(file)
 	var lineStart, lineEnd int64
-	if linesToSend == "nil" {
+	if linesToSend == nilInput {
 		lineStart, lineEnd = 0, countLines(red)
 	} else {	
 		lineStart, lineEnd = splitInput(linesToSend)
@@ -143,7 +143,6 @@ func putLinkToClipboard(link string){
 func main() {
 	fileToOpen, linesToSend := inputArgs()
 	text := parseFile(fileToOpen, linesToSend)
-	fmt.Println(text)
 	data := formData(text)
 	putLinkToClipboard(string(sendTextToPastehook(data)))
 }

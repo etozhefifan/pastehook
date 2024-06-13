@@ -1,4 +1,4 @@
-module pastehook
+module package
 
 go 1.22.3
 
